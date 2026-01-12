@@ -1,50 +1,50 @@
 > [!CAUTION]
-> **By using this guide, you accept all risks -** including potential device bricking, failed boots, or other issues. **We take no responsibility for any damage.**
+> **Bu kılavuzu kullanarak tüm riskleri kabul etmiş olursunuz -** cihazın brick olması, önyükleme hataları veya diğer sorunlar dahil. **Herhangi bir hasar için sorumluluk kabul etmiyoruz.**
 > 
-> Questions will **only** be considered **if you've read the full documentation** and **done your own research first.**
+> Sorular **yalnızca** **tüm belgeleri okuduysanız** ve **önce kendi araştırmanızı yaptıysanız** dikkate alınacaktır.
 
-## A Beginner-Friendly Guide to Compile Your First Android Kernel!
+## İlk Android Çekirdeğinizi Derlemek İçin Başlangıç Dostu Bir Kılavuz!
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](#)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](/LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/SamsungTweaks)
 
-**What You'll Learn:**  
+**Neler Öğreneceksiniz:**  
 
-- Understanding the kernel root & choosing the right compilers for compilation
-- Customizing the kernel and applying kernel patches.
-- Remove Samsung's anti-root protections.  
-- Creating a signed boot image from the compiled kernel
+- Çekirdek kökünü (kernel root) anlamak & derleme için doğru derleyicileri seçmek
+- Çekirdeği özelleştirmek ve çekirdek yamalarını uygulamak.  
+- Samsung'un anti-root korumalarını kaldırmak.  
+- Derlenmiş çekirdekten imzalı bir önyükleme imajı (boot image) oluşturmak
 
-**Requirements:**
-- A working 🧠  
-- Patience  
-- A x86_64 (AMD64) Linux-based PC/Server (Debian-based recommended)  
-- Basic knowledge of Linux commands and Bash scripting  
-- Basic knowledge of version control (Git)  
-  - This is good practice when building a kernel. Imagine you edit some files and realize you've messed up the source - this one single command `git stash` can help you revert all the uncommitted changes you made. How cool is that :)  
-
-  - Go [learn some Git from here](./Git-for-beginners/) **before** you start learning kernel compilation!
+**Gereksinimler:**
+- Çalışan bir 🧠  
+- Sabır  
+- x86_64 (AMD64) Linux tabanlı bir PC/Sunucu (Debian tabanlı önerilir)  
+- Temel Linux komutları ve Bash betikleme bilgisi  
+- Temel sürüm kontrolü (Git) bilgisi  
+  - Bu, bir çekirdek oluştururken iyi bir uygulamadır. Bazı dosyaları düzenlediğinizi ve kaynağı karıştırdığınızı fark ettiğinizi hayal edin - bu tek komut `git stash`, yaptığınız tüm kaydedilmemiş (uncommitted) değişiklikleri geri almanıza yardımcı olabilir. Ne kadar havalı değil mi :)
+  
+  - Çekirdek derlemeyi öğrenmeye başlamadan **önce** [buradan biraz Git öğrenin](./Git-for-beginners/)!
 	
-### 🛠 Install required dependencies for compiling kernels
+### 🛠 Çekirdekleri derlemek için gerekli bağımlılıkları yükleyin
 
 > [!TIP]
-> For the most reliable and hassle-free experience, we **strongly recommend** using our pre-configured Docker container which provides a stable, tested environment for kernel compilation that works on any OS. Download it from the [releases page](https://github.com/ravindu644/Android-Kernel-Tutorials/releases) and follow the included instructions.
+> En güvenilir ve sorunsuz deneyim için, herhangi bir işletim sisteminde çalışan, çekirdek derleme için kararlı, test edilmiş bir ortam sağlayan önceden yapılandırılmış Docker kapsayıcımızı kullanmanızı **şiddetle öneririz**. [Sürümler sayfasından](https://github.com/ravindu644/Android-Kernel-Tutorials/releases) indirin ve ekli talimatları izleyin.
 
 <details>
-<summary><strong>Expand to view how the Docker container looks like</strong></summary>
+<summary><strong>Docker kapsayıcısının nasıl göründüğünü görmek için genişletin</strong></summary>
 
 ![Kernel Builder Docker Container](./screenshots/kernel-builder.png)
 
-*Screenshot of the Ubuntu-based Docker container running on Fedora (click to view in full quality)*
+*Fedora üzerinde çalışan Ubuntu tabanlı Docker kapsayıcısının ekran görüntüsü (tam kalitede görüntülemek için tıklayın)*
 
 </details>
 
-But, if you don't want to use the Docker container, here are the commands to install the dependencies for Ubuntu/Fedora:
+Ancak, Docker kapsayıcısını kullanmak istemiyorsanız, Ubuntu/Fedora için bağımlılıkları yükleme komutları şunlardır:
 
 <details>
-<summary><strong>🟧 Ubuntu/Debian-based distributions (Ubuntu, Linux Mint, Debian, etc.)</strong></summary>
+<summary><strong>🟧 Ubuntu/Debian tabanlı dağıtımlar (Ubuntu, Linux Mint, Debian, vb.)</strong></summary>
 
 ```bash
 sudo apt update && sudo apt install -y git device-tree-compiler lz4 xz-utils zlib1g-dev openjdk-17-jdk gcc g++ python3 python-is-python3 p7zip-full android-sdk-libsparse-utils erofs-utils \
@@ -55,7 +55,7 @@ make repo cpio kmod openssl libelf-dev pahole libssl-dev libarchive-tools zstd r
 </details>
 
 <details>
-<summary><strong>🟦 Fedora/Red Hat-based distributions (Fedora, CentOS, RHEL, etc.)</strong></summary>
+<summary><strong>🟦 Fedora/Red Hat tabanlı dağıtımlar (Fedora, CentOS, RHEL, vb.)</strong></summary>
 
 ```bash
 sudo dnf group install "c-development" "development-tools" && \
@@ -69,43 +69,43 @@ openssl-devel libarchive zstd rsync
 
 <br>
 
-### Quick Links :
-01. 📁 [Downloading the kernel source code for your device](#downloading-kernel-source)
-02. 🧠 [Understanding the Kernel root](#understanding-kernel-root)
-03. 🧠 [Understanding non-GKI & GKI kernels](#understanding-non-gki-gki-kernels)
-04. 👀 [Preparing for the Compilation](#preparing-for-compilation)
-05. ⚙️ [Customizing the Kernel (Temporary Method)](#customizing-kernel-temporary-method)
-06. ⚙️ [Customizing the Kernel (Permanent Method)](#customizing-kernel-permanent-method)
-07. [⁉️ How to nuke Samsung's anti-root protections?](#nuke-samsung-anti-root-protections)
-08. 🟢 [Additional Patches](#additional-patches)
-09. ✅ [Compiling the Kernel](#compiling-the-kernel)
-10. 🟥 [Fixing the Known compiling issues](#fixing-known-compiling-issues)
-11. 🟡 [Building a Signed Boot Image from the Compiled Kernel](#building-signed-boot-image)
+### Hızlı Bağlantılar : 
+01. 📁 [Cihazınız için çekirdek kaynak kodunu indirme](#downloading-kernel-source)
+02. 🧠 [Çekirdek kökünü (Kernel root) anlamak](#understanding-kernel-root)
+03. 🧠 [non-GKI ve GKI çekirdeklerini anlamak](#understanding-non-gki-gki-kernels)
+04. 👀 [Derlemeye Hazırlık](#preparing-for-compilation)
+05. ⚙️ [Çekirdeği Özelleştirme (Geçici Yöntem)](#customizing-kernel-temporary-method)
+06. ⚙️ [Çekirdeği Özelleştirme (Kalıcı Yöntem)](#customizing-kernel-permanent-method)
+07. [⁉️ Samsung'un anti-root korumaları nasıl kaldırılır?](#nuke-samsung-anti-root-protections)
+08. 🟢 [Ek Yamalar](#additional-patches)
+09. ✅ [Çekirdeği Derlemek](#compiling-the-kernel)
+10. 🟥 [Bilinen derleme sorunlarını düzeltme](#fixing-known-compiling-issues)
+11. 🟡 [Derlenmiş Çekirdekten İmzalı Bir Önyükleme İmajı (Boot Image) Oluşturma](#building-signed-boot-image)
 
 ---
 
 > [!NOTE]
-> If you are not a beginner and want to build a GKI 2.0 kernel from the official Google sources, jump to the [gki-2.0](https://github.com/ravindu644/Android-Kernel-Tutorials/tree/gki-2.0) branch.
+> Yeni başlayan biri değilseniz ve resmi Google kaynaklarından bir GKI 2.0 çekirdeği oluşturmak istiyorsanız, [gki-2.0](https://github.com/ravindu644/Android-Kernel-Tutorials/tree/gki-2.0) dalına (branch) geçin.
 >
-> Credit to [@TheWildJames](https://github.com/TheWildJames) for the awesome tutorial!
+> Harika eğitim için [@TheWildJames](https://github.com/TheWildJames)'e teşekkürler!
 >
-> To-do:
+> Yapılacaklar:
 >
-> - Write a separate guide about using Samsung/Google's official GKI Build Systems (1.0 / 2.0+) to build an automated kernel with customization support.
+> - Özelleştirme destekli otomatik bir çekirdek oluşturmak için Samsung/Google'ın resmi GKI Derleme Sistemlerini (1.0 / 2.0+) kullanma hakkında ayrı bir kılavuz yazın. 
 >
-> - Write a guide on wiring up and injecting the 500+ built Loadable Kernel Modules (.ko drivers) into `vendor_boot` and `vendor_dlkm` images, without causing conflicts or device crashes.
+> - Çakışmalara veya cihaz çökmelerine neden olmadan 500'den fazla oluşturulmuş Yüklenebilir Çekirdek Modülünü (.ko sürücüleri) `vendor_boot` ve `vendor_dlkm` imajlarına bağlama ve enjekte etme konusunda bir kılavuz yazın.
 
 ---
 
-<h2 id="downloading-kernel-source"> ✅ Downloading the kernel source code for your device</h2>
+<h2 id="downloading-kernel-source"> ✅ Cihazınız için çekirdek kaynak kodunu indirme</h2>
 
-- **⚠️ If your device is Samsung,**
+- **⚠️ Cihazınız Samsung ise,**
 
-#### 01. Download the kernel source from here: [Samsung Opensource]( https://opensource.samsung.com/main)
+#### 01. Çekirdek kaynağını buradan indirin: [Samsung Opensource]( https://opensource.samsung.com/main)
 
 <img src="./screenshots/1.png">
 
-#### 02. Extract the ```Kernel.tar.gz``` from the source zip, unarchive it using this command and please do not use any apps to do this:
+#### 02. Kaynak zip dosyasından ```Kernel.tar.gz``` dosyasını çıkarın, bu komutu kullanarak arşivden çıkarın ve lütfen bunu yapmak için herhangi bir uygulama kullanmayın:
 
 ```bash
 tar -xvf Kernel.tar.gz && rm Kernel.tar.gz
@@ -113,37 +113,37 @@ tar -xvf Kernel.tar.gz && rm Kernel.tar.gz
 
 <img src="./screenshots/2.png">
 
-**Note:** It's a good idea to give the entire kernel directory 755 permission to remove those read-only error from files and folders. This prevents issues when editing files and upstreaming the kernel.
+**Not:** Dosya ve klasörlerdeki salt okunur hatalarını kaldırmak için tüm çekirdek dizinine 755 izni vermek iyi bir fikirdir. Bu, dosyaları düzenlerken ve çekirdeği güncellerken (upstreaming) sorunları önler.
 
-**Run this command to fix it:**
+**Düzeltmek için bu komutu çalıştırın:**
 
 ```
 chmod +755 -R /path/to/extracted/kernel/
 ```
 
-**Before:**
+**Önce:**
 <img src="./screenshots/3.png">
 
-**After:**
+**Sonra:**
 <img src="./screenshots/4.png">
 
-**The following video demonstrates all the steps mentioned above:** 
+**Aşağıdaki video yukarıda belirtilen tüm adımları göstermektedir:** 
 
-[🎥 Extracting Samsung's Kernel.tar.gz & granting required permissions](https://www.youtube.com/watch?v=QLymPkTpC2Y)
+[🎥 Samsung'un Kernel.tar.gz dosyasını çıkarma & gerekli izinleri verme](https://www.youtube.com/watch?v=QLymPkTpC2Y)
 
 <hr>
 
-- **⚠️ For other devices,** You can find them by your OEM's sites or from your OEM's **official** GitHub repos:
+- **⚠️ Diğer cihazlar için,** Bunları OEM'inizin sitelerinde veya OEM'inizin **resmi** GitHub depolarında bulabilirsiniz:
 
   <img src="./screenshots/13.png">
 
-## <span id="understanding-non-gki-gki-kernels">✅ Understanding `non-GKI` & `GKI kernels`</span>
+## <span id="understanding-non-gki-gki-kernels">✅ `non-GKI` ve `GKI çekirdeklerini` anlamak</span>
 
-### 01. GKI project introduction
+### 01. GKI projesi tanıtımı
 
-- **Generic Kernel Image,** or **GKI,** is an Android's project that aims for reducing kernel fragmentation, (and also improving Android stability), **by unifying kernel core and moving SoC and Board support out of the core kernel into loadable vendor modules.**
+- **Genel Çekirdek İmajı (Generic Kernel Image)** veya **GKI**, **çekirdek çekirdeğini (kernel core) birleştirerek ve SoC ve Kart desteğini çekirdek çekirdeğinden yüklenebilir satıcı modüllerine taşıyarak** çekirdek parçalanmasını azaltmayı (ve ayrıca Android kararlılığını artırmayı) amaçlayan bir Android projesidir.
 
-### 02. `pre-GKI`/`non-GKI` and `GKI` linux version table
+### 02. `pre-GKI`/`non-GKI` ve `GKI` linux sürüm tablosu
 | Pre-GKI | GKI 1.0 | GKI 2.0 |
 |---------|---------|---------|
 | 3.10    | 5.4     | 5.10    |
@@ -152,168 +152,168 @@ chmod +755 -R /path/to/extracted/kernel/
 | 4.9     |         | 6.6     |
 | 4.14    |         |         |
 | 4.19    |         |         |
-#### Explanation:
+#### Açıklama:
 
-1. **pre-GKI or non-GKI**:
-   - The oldest Android kernel branch, likely starts from Linux version 2.x.
-   - These kernels are **device-specific** because its often heavily modified to accommodate SoCs and OEMs needs.
-   - Starting to get deprecated in ACK, since `linux-4.19.y` branch already reaching EoL (End of Life) state, with last Linux 4.19.325
+1. **pre-GKI veya non-GKI**:
+   - En eski Android çekirdek dalı, muhtemelen Linux sürüm 2.x'ten başlar.
+   - Bu çekirdekler **cihaza özgüdür** çünkü genellikle SoC'lerin ve OEM'lerin ihtiyaçlarını karşılamak için büyük ölçüde değiştirilmiştir.
+   - ACK'de kullanımdan kaldırılmaya başlandı, çünkü `linux-4.19.y` dalı son Linux 4.19.325 ile zaten EoL (Ömür Sonu) durumuna ulaştı.
 
 3. **GKI 1.0**:
-   - Android's first generation of the Generic Kernel Image, starting with kernel version **5.4**.
-   - This first generation of GKI only have android11-5.4 and android12-5.4 branch and Google announced that GKI 1.0 is deprecated.
-   - The first generation of GKI is not yet matured as second generation of GKI, as its failed to reach GKI project goals.
-   - These kernels are considered as **device-specific**, but more commonized, depends on how OEMs and SoCs Manufacturer treat them.
-   - SoC Manufacturers often modify GKI 1.0 kernel to add their SoC features. From this modifications, the term **Mediatek GKI (mGKI)** and **Qualcomm GKI (qGKI)** exist.
+   - Android'in Genel Çekirdek İmajı'nın ilk nesli, çekirdek sürümü **5.4** ile başlar.
+   - Bu ilk GKI nesli yalnızca android11-5.4 ve android12-5.4 dallarına sahiptir ve Google, GKI 1.0'ın kullanımdan kaldırıldığını duyurdu.
+   - GKI'nın ilk nesli, GKI proje hedeflerine ulaşamadığı için ikinci nesil GKI kadar henüz olgunlaşmamıştır.
+   - Bu çekirdekler **cihaza özgü** olarak kabul edilir, ancak daha yaygındır, OEM'lerin ve SoC Üreticilerinin onlara nasıl davrandığına bağlıdır.
+   - SoC Üreticileri genellikle SoC özelliklerini eklemek için GKI 1.0 çekirdeğini değiştirir. Bu değişikliklerden **Mediatek GKI (mGKI)** ve **Qualcomm GKI (qGKI)** terimleri ortaya çıkar.
 
 4. **GKI 2.0**:
-   - Android's second generation of the Generic Kernel Image, starting with kernel version **5.10**.
-   - In this second generation, GKI project starting to get matured properly.
-   - This kernel is considered as "universal", since you can boot a GKI kernels that builded with Google's GKI kernel source on **some** devices, if correct and match.
+   - Android'in Genel Çekirdek İmajı'nın ikinci nesli, çekirdek sürümü **5.10** ile başlar.
+   - Bu ikinci nesilde, GKI projesi düzgün bir şekilde olgunlaşmaya başlıyor.
+   - Bu çekirdek "evrensel" olarak kabul edilir, çünkü Google'ın GKI çekirdek kaynağıyla oluşturulan bir GKI çekirdeğini, doğru ve eşleşirse **bazı** cihazlarda önyükleyebilirsiniz.
 
-### Notes:
-- **LTS = Long-Term Support**: These kernels are stable, well-maintained, and receive long-term updates.
-- **GKI = Generic Kernel Image**: A unified kernel framework introduced by Google to standardize the kernel across Android devices.
-- **SoC = System on Chip**
-- **ACK = Android Common Kernel**: An Android's linux LTS kernel branch, modified to accommodate Android needs.
-- OEMs like Samsung may still modify GKI 2.0 kernels to accommodate their needs, and can cause some issues like broken SD Card and broken Audio. 
-  - **So, use their GKI kernel source instead if possible.**
+### Notlar:
+- **LTS = Long-Term Support (Uzun Süreli Destek)**: Bu çekirdekler kararlıdır, iyi korunur ve uzun süreli güncellemeler alır.
+- **GKI = Generic Kernel Image (Genel Çekirdek İmajı)**: Android cihazlarda çekirdeği standartlaştırmak için Google tarafından tanıtılan birleşik bir çekirdek çerçevesi.
+- **SoC = System on Chip (Yonga Üzerinde Sistem)**
+- **ACK = Android Common Kernel (Android Ortak Çekirdeği)**: Android ihtiyaçlarını karşılamak üzere değiştirilmiş bir Android linux LTS çekirdek dalı.
+- Samsung gibi OEM'ler ihtiyaçlarını karşılamak için GKI 2.0 çekirdeklerini değiştirmeye devam edebilir ve bozuk SD Kart ve bozuk Ses gibi bazı sorunlara neden olabilir. 
+  - **Bu yüzden mümkünse onların GKI çekirdek kaynağını kullanın.**
 
-- For 4.19 kernels, they are predominantly non-GKI implementations, as true GKI was not officially introduced until kernel 5.4 with Android 11.
+- 4.19 çekirdekleri için, bunlar ağırlıklı olarak non-GKI uygulamalarıdır, çünkü gerçek GKI, Android 11 ile çekirdek 5.4'e kadar resmi olarak tanıtılmamıştı. 
 
-  - OEMs typically use heavily customized, device-specific implementations based on the Android Common Kernel for 4.19. You can refer to the Android Common Kernel repository if you are interested.
-  - For your information, there was experimental GKI development with 4.19 (android-4.19-gki-dev branch), but this was not widely deployed. Official GKI implementation began with kernel 5.4.
-  - Examples:
-     1. Most Samsung devices with kernel 4.19 use non-GKI implementations with OEM-specific modifications.
-     2. True GKI adoption became standard with newer devices shipping Android 11+ with kernel 5.4 or higher.
+  - OEM'ler genellikle 4.19 için Android Ortak Çekirdeği'ne dayalı, yoğun şekilde özelleştirilmiş, cihaza özgü uygulamalar kullanır. İlgileniyorsanız Android Ortak Çekirdeği deposuna başvurabilirsiniz.
+  - Bilginiz olsun, 4.19 ile deneysel GKI geliştirmesi vardı (android-4.19-gki-dev dalı), ancak bu yaygın olarak dağıtılmadı. Resmi GKI uygulaması çekirdek 5.4 ile başladı.
+  - Örnekler:
+     1. Çekirdek 4.19'a sahip çoğu Samsung cihazı, OEM'e özgü değişikliklerle non-GKI uygulamaları kullanır.
+     2. Gerçek GKI benimsemesi, Android 11+ ile gelen çekirdek 5.4 veya daha yüksek sürümlü yeni cihazlarla standart hale geldi.
 
-## <span id="understanding-kernel-root">✅ Understanding the ```Kernel root```</span>
+## <span id="understanding-kernel-root">✅ ```Çekirdek kökünü``` (Kernel root) anlamak</span>
 
 <img src="./screenshots/6.png">
 
-- As you can see in the above screenshot, it's the Linux kernel source code.
-- It must have those folders, **highlighted in blue in the terminal.**
-- **In traditional GKI kernels,** the kernel root is located in a folder named "common".
+- Yukarıdaki ekran görüntüsünde görebileceğiniz gibi, bu Linux çekirdek kaynak kodudur.
+- **Terminalde mavi ile vurgulanan** klasörlere sahip olmalıdır.
+- **Geleneksel GKI çekirdeklerinde,** çekirdek kökü "common" adlı bir klasörde bulunur.
 
-- **In GKI Samsung Qualcomm kernel sources**, you should use the `common` kernel instead of `msm-kernel` for compilation.
-- **In some GKI Samsung MediaTek kernel sources**, the kernel root is named `kernel-VERSION.PATCHLEVEL`.
-  - e.g., `kernel-5.15`
+- **GKI Samsung Qualcomm çekirdek kaynaklarında**, derleme için `msm-kernel` yerine `common` çekirdeği kullanmalısınız.
+- **Bazı GKI Samsung MediaTek çekirdek kaynaklarında**, çekirdek kökü `kernel-SÜRÜM.YAMA_DÜZEYİ` olarak adlandırılır.
+  - örn., `kernel-5.15`
 
-## <span id="preparing-for-compilation">✅ Preparing for the Compilation</span>
+## <span id="preparing-for-compilation">✅ Derlemeye Hazırlık</span>
 
-- There are 2 ways to compile the kernel.  
+- Çekirdeği derlemenin 2 yolu vardır.  
 
-1. **Without** a build script.  
-2. **With** a build script.  
+1. Bir derleme betiği **olmadan**.  
+2. Bir derleme betiği **ile**.  
 
-If you are a beginner, I recommend trying to build the kernel without a build script first. Once you understand the logic, you can then use a build script to make your life easier :)
-
----
-
-## 🟠 Method 1: Without a build script.
-
-### 01. Choosing the right compiler.
-
-- Before compiling the kernel, we must determine the compatible compilers to use for building our kernel.
-
-- You can open your `Makefile` to check your kernel version.  
-
-  ![Makefile screenshot](./screenshots/31.png)  
-  *Kernel version = `VERSION.PATCHLEVEL.SUBLEVEL`*
-
-- In my case, the kernel version is **4.14.113**.
-
-- You can find full information about **choosing the correct compiler for your kernel version** [here](./toolchains/) (based on my experience, btw).
-
-- In my case, they are: [clang-r383902b](https://github.com/ravindu644/Android-Kernel-Tutorials/releases/download/toolchains/clang-r383902b.tar.gz), [arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu](https://github.com/ravindu644/Android-Kernel-Tutorials/releases/download/toolchains/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz)
-
-- Download the correct compiler(s) for your kernel version from there, and extract them into a new folder(s) like this:
-
-  ![Makefile screenshot](./screenshots/32.png)  
-  *Extracted clang*
-
-  ![Makefile screenshot](./screenshots/33.png)  
-  *Extracted cross compiler*
-
----
-### 02. Exporting the compiler locations to the PATH
-
-- Even though we downloaded the right compilers, our system (Host OS) will not automatically know which compiler to use for building our kernel.  
-
-- By default, it will use the system’s compilers, which might be incompatible with older kernels.  
-  → In such a case, the build will fail instantly.  
-
-- So, our task is to wire up the downloaded compilers to our system’s `PATH`.  
-  We must tell the system: “use the `clang` binary from here, not your own clang!”  
+Yeni başlıyorsanız, önce çekirdeği bir derleme betiği olmadan oluşturmayı denemenizi öneririm. Mantığı anladıktan sonra, hayatınızı kolaylaştırmak için bir derleme betiği kullanabilirsiniz :)
 
 ---
 
-#### 💡 What is `PATH`?
-`PATH` is an environment variable in Linux/Unix that stores a list of directories.  
-When you type a command (like `clang` or `gcc`), the system looks through the directories in `PATH` **from left to right** to find the first matching executable.  
+## 🟠 Yöntem 1: Bir derleme betiği olmadan.
 
-By adding your downloaded compiler’s folder to **the begining of the** `PATH`, you make sure the build system picks **your compiler** instead of the system default.
+### 01. Doğru derleyiciyi seçmek.
+
+- Çekirdeği derlemeden önce, çekirdeğimizi oluşturmak için kullanılacak uyumlu derleyicileri belirlemeliyiz.
+
+- Çekirdek sürümünüzü kontrol etmek için `Makefile` dosyanızı açabilirsiniz.  
+
+  ![Makefile ekran görüntüsü](./screenshots/31.png)  
+  *Çekirdek sürümü = `VERSION.PATCHLEVEL.SUBLEVEL`*
+
+- Benim durumumda, çekirdek sürümü **4.14.113**.
+
+- **Çekirdek sürümünüz için doğru derleyiciyi seçme** hakkında tam bilgiyi [burada](./toolchains/) (based on my experience, btw).
+
+- Benim durumumda bunlar: [clang-r383902b](https://github.com/ravindu644/Android-Kernel-Tutorials/releases/download/toolchains/clang-r383902b.tar.gz), [arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu](https://github.com/ravindu644/Android-Kernel-Tutorials/releases/download/toolchains/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz)
+
+- Çekirdek sürümünüz için doğru derleyici(ler)i oradan indirin ve bunları yeni bir klasör(ler)e şu şekilde çıkarın:
+
+  ![Makefile ekran görüntüsü](./screenshots/32.png)  
+  *Çıkarılan clang*
+
+  ![Makefile ekran görüntüsü](./screenshots/33.png)  
+  *Çıkarılan çapraz derleyici (cross compiler)*
+
+---
+### 02. Derleyici konumlarını PATH'e aktarmak (export)
+
+- Doğru derleyicileri indirmiş olsak bile, sistemimiz (Ana İşletim Sistemi) çekirdeğimizi oluşturmak için hangi derleyiciyi kullanacağını otomatik olarak bilmeyecektir.  
+
+- Varsayılan olarak, sistemin derleyicilerini kullanacaktır, bu da eski çekirdeklerle uyumsuz olabilir.  
+  → Böyle bir durumda, derleme anında başarısız olacaktır.  
+
+- Bu yüzden görevimiz, indirilen derleyicileri sistemimizin `PATH`'ine bağlamaktır.  
+  Sisteme şunu söylemeliyiz: "Kendi clang'ini değil, buradaki `clang` ikili dosyasını (binary) kullan!"  
 
 ---
 
-- To check what your `PATH` variable looks like, you can type `echo $PATH` in the terminal:  
+#### 💡 `PATH` nedir?
+`PATH`, Linux/Unix'te dizinlerin bir listesini saklayan bir ortam değişkenidir.  
+Bir komut yazdığınızda (örneğin `clang` veya `gcc`), sistem ilk eşleşen çalıştırılabilir dosyayı bulmak için `PATH` içindeki dizinlere **soldan sağa** bakar.  
 
-  ![PATH screenshot](./screenshots/34.png)  
-  - Our goal is to add our compilers' locations to the left side of `/usr/local/sbin` :)
+İndirdiğiniz derleyicinin klasörünü `PATH`'in **başına** ekleyerek, derleme sisteminin sistem varsayılanı yerine **sizin derleyicinizi** seçmesini sağlarsınız.
 
-- In the extracted compiler folders, the binary files (executables) are usually located inside the `bin` folder, like this:  
+---
 
-  ![Bin folder screenshot](./screenshots/35.png)
+- `PATH` değişkeninizin neye benzediğini kontrol etmek için terminalde `echo $PATH` yazabilirsiniz:  
 
-- Copy the full path to that `bin` folder and export those locations to the `PATH` like this:  
+  ![PATH ekran görüntüsü](./screenshots/34.png)  
+  - Amacımız derleyicilerimizin konumlarını `/usr/local/sbin`'in sol tarafına eklemektir :)
+
+- Çıkarılan derleyici klasörlerinde, ikili dosyalar (çalıştırılabilir dosyalar) genellikle `bin` klasörünün içinde bulunur, bunun gibi:  
+
+  ![Bin klasörü ekran görüntüsü](./screenshots/35.png)
+
+- O `bin` klasörünün tam yolunu kopyalayın ve bu konumları `PATH`'e şu şekilde aktarın:  
 
   ```bash
   export PATH="/path/to/first/compiler/bin:/path/to/second/compiler/bin:$PATH"
   ```
 
-- **In my case,** it looked like this:
+- **Benim durumumda,** şöyle görünüyordu:
 
   ```bash
   export PATH="/home/kernel-builder/toolchains/clang-r383902b/bin:/home/kernel-builder/toolchains/gcc/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu/bin:$PATH"
   ```
 
-**As you can see, we have successfully exported the toolchains to our `PATH`:**
+**Gördüğünüz gibi, araç zincirlerini (toolchains) başarıyla `PATH`'imize aktardık:**
 
-  ![Bin folder screenshot](./screenshots/36.png)
+  ![Bin klasörü ekran görüntüsü](./screenshots/36.png)
 
-**For confirmation,** type `clang -v` in the terminal to verify that it is actually wired up!
+**Doğrulama için,** terminale `clang -v` yazarak gerçekten bağlandığını doğrulayın!
 
-  ![Bin folder screenshot](./screenshots/37.png)
-  *We did it!*
-
----
-
-### 03. Compiling the kernel with `make`
-
-- Keep in mind that the `PATH` variable we exported in Step 02 is **only valid in the currently opened terminal.**  
-
-  **So, don't close it** - use that terminal window to navigate the kernel source and run commands for further compilation.
-
-- **Now,** using that terminal window, navigate to your **root of the kernel source** like this: `cd /path/to/kernel-root`
-
-  ![Bin folder screenshot](./screenshots/38.png)
+  ![Bin klasörü ekran görüntüsü](./screenshots/37.png)
+  *Başardık!*
 
 ---
 
-**💡 Better to Know:** A **defconfig** (default configuration) is like a preset settings file for the kernel.
+### 03. Çekirdeği `make` ile derlemek
 
-- It tells the build system which features to enable or disable.
-- Common defconfig locations are `arch/arm64/configs` or `arch/arm64/configs/vendor`.
+- Adım 02'de dışa aktardığımız `PATH` değişkeninin **yalnızca o anda açık olan terminalde geçerli olduğunu** unutmayın.  
+
+  **Bu yüzden onu kapatmayın** - çekirdek kaynağında gezinmek ve daha fazla derleme komutu çalıştırmak için o terminal penceresini kullanın.
+
+- **Şimdi,** o terminal penceresini kullanarak, **çekirdek kaynağınızın köküne** şu şekilde gidin: `cd /path/to/kernel-root`
+
+  ![Bin klasörü ekran görüntüsü](./screenshots/38.png)
 
 ---
 
-- **In my case,** my defconfig is located at `arch/arm64/configs`, and its name is `exynos9820-beyondxks_defconfig`.
+**💡 Bilmekte Fayda Var:** Bir **defconfig** (varsayılan yapılandırma), çekirdek için bir ön ayar dosyası gibidir.
 
-  - **Also,** I have multiple defconfigs made for my **specific purposes**, named: `common.config`, `ksu.config`, and `nethunter.config`.
-  - You can also create your own customized defconfigs for specific changes (more on that later)!
+- Derleme sistemine hangi özelliklerin etkinleştirileceğini veya devre dışı bırakılacağını söyler.
+- Yaygın defconfig konumları `arch/arm64/configs` veya `arch/arm64/configs/vendor` şeklindedir.
 
-- Now, we need to tell our compilers to "use these defconfigs to build the kernel"!  
-- To do that, simply run the following command:
+---
+
+- **Benim durumumda,** defconfig dosyam `arch/arm64/configs` konumunda ve adı `exynos9820-beyondxks_defconfig`.
+
+  - **Ayrıca,** **özel amaçlarım** için yapılmış birden fazla defconfig dosyam var, isimleri: `common.config`, `ksu.config` ve `nethunter.config`.
+  - Belirli değişiklikler için kendi özelleştirilmiş defconfig'lerinizi de oluşturabilirsiniz (buna daha sonra değineceğiz)!
+
+- Şimdi, derleyicilerimize "çekirdeği oluşturmak için bu defconfig'leri kullan" dememiz gerekiyor!  
+- Bunu yapmak için, sadece aşağıdaki komutu çalıştırın:
 
 ```bash
 make \
@@ -321,56 +321,56 @@ make \
   CC=clang \
   CROSS_COMPILE=aarch64-none-linux-gnu- \
   CLANG_TRIPLE=aarch64-none-linux-gnu- \
-  your_defconfig your_second_defconfig your_third_defconfig
+  senin_defconfigin senin_ikinci_defconfigin senin_ucuncu_defconfigin
 ```
 ---
 
-**💡 Explanation:**
+**💡 Açıklama:**
 
-1. **ARCH=arm64** → Specifies the architecture of the kernel we are building.
+1. **ARCH=arm64** → Oluşturduğumuz çekirdeğin mimarisini belirtir.
 
-    - In our case, it is 64-bit ARM.
+    - Bizim durumumuzda, bu 64-bit ARM'dir.
 
-2. **CC=clang** → Tells `make` to use the `clang` compiler.
+2. **CC=clang** → `make` komutuna `clang` derleyicisini kullanmasını söyler.
 
-    - **Don't change this value.** Keep it as it is!
+    - **Bu değeri değiştirmeyin.** Olduğu gibi kalsın!
 
-3. **CROSS_COMPILE=aarch64-none-linux-gnu-** → Prefix for the cross-compiler binaries (e.g., `aarch64-none-linux-gnu-gcc`).
+3. **CROSS_COMPILE=aarch64-none-linux-gnu-** → Çapraz derleyici ikili dosyaları için önek (örn. `aarch64-none-linux-gnu-gcc`).
 
-    - You can get this value by opening your GCC's `bin` folder. All the binaries have the same prefix!
+    - Bu değeri GCC'nizin `bin` klasörünü açarak alabilirsiniz. Tüm ikili dosyalar aynı öneke sahiptir!
 
-    ![Bin folder screenshot](./screenshots/39.png)  
-    *See the highlighted part. `aarch64-none-linux-gnu-` is the common prefix for all the binaries, and it is the value for the `CROSS_COMPILE` variable.*
+    ![Bin klasörü ekran görüntüsü](./screenshots/39.png)  
+    *Vurgulanan kısma bakın. `aarch64-none-linux-gnu-`, tüm ikili dosyalar için ortak önektir ve `CROSS_COMPILE` değişkeninin değeridir.*
 
-4. **CLANG_TRIPLE=aarch64-linux-gnu-** → Tells Clang exactly which target architecture, OS, and ABI to compile for.
+4. **CLANG_TRIPLE=aarch64-linux-gnu-** → Clang'e tam olarak hangi hedef mimari, işletim sistemi ve ABI için derleme yapacağını söyler.
 
-    - Ensures the kernel build system can enable features and flags specific to ARM64 Linux.
-    - This does **not** require a literal binary named `aarch64-linux-gnu-` in your path — Clang uses it internally as a target specification.
-    - You can also use `aarch64-none-linux-gnu-` as the triple; the vendor field (`none`) is usually ignored by Clang.
+    - Çekirdek derleme sisteminin ARM64 Linux'a özgü özellikleri ve bayrakları etkinleştirebilmesini sağlar.
+    - Bu, yolunuzda (path) tam olarak `aarch64-linux-gnu-` adında bir ikili dosya olmasını **gerektirmez** — Clang bunu dahili olarak bir hedef belirtimi olarak kullanır.
+    - Ayrıca üçlü olarak `aarch64-none-linux-gnu-` da kullanabilirsiniz; satıcı alanı (`none`) genellikle Clang tarafından yoksayılır.
 
-5. **your_defconfig ...** → These are the configuration files (`defconfigs`) that define which kernel features, drivers, and options to include in the build.
+5. **senin_defconfigin ...** → Bunlar, derlemeye hangi çekirdek özelliklerinin, sürücülerin ve seçeneklerin dahil edileceğini tanımlayan yapılandırma dosyalarıdır (`defconfig`ler).
 
-**This is the absolute barebone of the `make` command for compiling the Android kernel. Don't try to remove any part of this code!**
-
----
-
-- Now, when you run that above command, the build system will read all of your `defconfig` files and merge them into a single file called `.config` !
-
-  ![Bin folder screenshot](./screenshots/40.png)
-  *Screenshot **before** running the command*
-
-  ![Bin folder screenshot](./screenshots/41.png)
-  *Screenshot **after** running the command*
-
-**This will write the final configuration to a hidden file named `.config`, which will be used by the build system to compile the kernel:**
-
-  ![Bin folder screenshot](./screenshots/42.png)
+**Bu, Android çekirdeğini derlemek için `make` komutunun mutlak iskeletidir. Bu kodun herhangi bir parçasını çıkarmaya çalışmayın!**
 
 ---
 
-- Before compiling the kernel, if you want to edit the contents of the `.config` in a GUI way, you can use the `menuconfig` tool.  
+- Şimdi, yukarıdaki komutu çalıştırdığınızda, derleme sistemi tüm `defconfig` dosyalarınızı okuyacak ve bunları `.config` adında tek bir dosyada birleştirecektir!
 
-- To launch `menuconfig`, type the same beginning of the command you used to create the `.config` (i.e., the `CC` and `CROSS_COMPILE` parts), but at the end, instead of defconfig names, use `menuconfig` like this:
+  ![Bin klasörü ekran görüntüsü](./screenshots/40.png)
+  *Komutu çalıştırmadan **önceki** ekran görüntüsü*
+
+  ![Bin klasörü ekran görüntüsü](./screenshots/41.png)
+  *Komutu çalıştırdıktan **sonraki** ekran görüntüsü*
+
+**Bu, nihai yapılandırmayı `.config` adında gizli bir dosyaya yazacaktır, bu dosya derleme sistemi tarafından çekirdeği derlemek için kullanılacaktır:**
+
+  ![Bin klasörü ekran görüntüsü](./screenshots/42.png)
+
+---
+
+- Çekirdeği derlemeden önce, `.config` içeriğini GUI (Grafiksel Kullanıcı Arayüzü) yoluyla düzenlemek isterseniz, `menuconfig` aracını kullanabilirsiniz.  
+
+- `menuconfig`'i başlatmak için, `.config` oluştururken kullandığınız komutun aynısını (yani `CC` ve `CROSS_COMPILE` kısımları) kullanın, ancak sonunda defconfig adları yerine şu şekilde `menuconfig` kullanın:
 
 ```bash
 make \
@@ -381,20 +381,20 @@ make \
   menuconfig
 ```
 
-  ![Bin folder screenshot](./screenshots/43.png)  
-  *It will open something like this. Feel free to edit it according to your needs.*
+  ![Bin klasörü ekran görüntüsü](./screenshots/43.png)  
+  *Buna benzer bir şey açılacak. İhtiyaçlarınıza göre düzenlemekten çekinmeyin.*
 
-**Use the arrow keys to navigate through `menuconfig`. Once you are done editing, exit `menuconfig` to proceed with building the kernel.**
+**`menuconfig` içinde gezinmek için yön tuşlarını kullanın. Düzenlemeyi bitirdiğinizde, çekirdeği oluşturmaya devam etmek için `menuconfig`'den çıkın.**
 
-**Note:** The customization part is not discussed here; it is covered in Method 2. This is just the barebones of "Compiling the kernel."
+**Not:** Özelleştirme kısmı burada tartışılmamaktadır; bu konu Yöntem 2'de ele alınmıştır. Bu sadece "Çekirdeği derleme"nin temelleridir.
 
 ---
 
-- Now, we have successfully created the final configuration file (`.config`) and, if needed, customized it using `menuconfig`.  
+- Şimdi, nihai yapılandırma dosyasını (`.config`) başarıyla oluşturduk ve gerekirse `menuconfig` kullanarak özelleştirdik.  
 
-- The only thing left to do is compile the kernel!  
+- Yapılacak tek şey çekirdeği derlemek!  
 
-- To compile, run the same command as before with the same beginning (the `ARCH`, `CC`, and `CROSS_COMPILE` parts), but this time **do not specify any defconfig or menuconfig at the end**. Like this:
+- Derlemek için, aynı başlangıca sahip ( `ARCH`, `CC` ve `CROSS_COMPILE` kısımları) komutu çalıştırın, ancak bu sefer **sonunda herhangi bir defconfig veya menuconfig belirtmeyin**. Şunun gibi:
 
 ```bash
 make \
@@ -406,40 +406,40 @@ make \
 
 ---
 
-### 💡 What this does:
+### 💡 Bu ne işe yarar:
 
-This command tells the build system to start compiling the kernel immediately using the `.config` you just created. All the settings and options from `.config` will now guide the build process.
-
----
-
-**Once you run the above command, the build system will start compiling the kernel in the same kernel root directory:**
-
-  ![Bin folder screenshot](./screenshots/44.png)  
-
-### Barebone Training is enough! 
-
-**Let's jump into the easiest and laziest method you can do xD**
-**We'll explore the compilation more deeply in `Method 02`!**
+Bu komut, derleme sistemine az önce oluşturduğunuz `.config` dosyasını kullanarak çekirdeği derlemeye hemen başlamasını söyler. `.config` dosyasındaki tüm ayarlar ve seçenekler şimdi derleme sürecine rehberlik edecektir.
 
 ---
 
-## 🟠 Method 2: With a build script.
+**Yukarıdaki komutu çalıştırdığınızda, derleme sistemi aynı çekirdek kök dizininde çekirdeği derlemeye başlayacaktır:**
 
-### 01. After downloading or cloning the Kernel Source, we should have a build script to compile our kernel.
+  ![Bin klasörü ekran görüntüsü](./screenshots/44.png)  
 
-- Before creating a build script, we must determine the compatible compilers we will use to build our kernel.
+### Temel Eğitim yeterli! 
 
-- Run ```make kernelversion``` inside the kernel root to check your kernel version.
+**Yapabileceğiniz en kolay ve en tembel yönteme atlayalım xD**
+**`Yöntem 02`'de derlemeyi daha derinlemesine inceleyeceğiz!**
+
+---
+
+## 🟠 Yöntem 2: Bir derleme betiği ile.
+
+### 01. Çekirdek Kaynağını indirdikten veya klonladıktan sonra, çekirdeğimizi derlemek için bir derleme betiğimiz (build script) olmalıdır.
+
+- Bir derleme betiği oluşturmadan önce, çekirdeğimizi oluşturmak için kullanacağımız uyumlu derleyicileri belirlemeliyiz.
+
+- Çekirdek sürümünüzü kontrol etmek için çekirdek kökü içinde ```make kernelversion``` komutunu çalıştırın.
 
 <img src="./screenshots/5.png">
 
-- In my case, the kernel version is **5.4,** with qualcomm chipset, which is [qGKI](https://github.com/ravindu644/Android-Kernel-Tutorials#-understanding-non-gki--gki-kernels).
+- Benim durumumda, çekirdek sürümü **5.4**, qualcomm yonga seti ile, bu da [qGKI](https://github.com/ravindu644/Android-Kernel-Tutorials#-understanding-non-gki--gki-kernels)'dır.
 
-- You can find full information about **choosing the correct compiler for your kernel version** [here](./toolchains/) (based on my experience, btw).
+- **Çekirdek sürümünüz için doğru derleyiciyi seçme** hakkında tam bilgiyi [burada](./toolchains/) (based on my experience, btw).
 
-- Keep in mind that **you don't need to manually download any of these toolchains** since my build scripts handle everything for you :)  
+- Derleme betiklerim her şeyi sizin için hallettiğinden **bu araç zincirlerinin hiçbirini manuel olarak indirmeniz gerekmediğini** unutmayın :)
 
-- Next, go to [build_scripts](./build_scripts/), choose the appropriate script, download it, and place it inside your kernel's root directory.
+- Sonra, [build_scripts](./build_scripts/) dizinine gidin, uygun betiği seçin, indirin ve çekirdeğinizin kök dizinine yerleştirin.
 
 <img src="./screenshots/7.png">
 
@@ -447,231 +447,229 @@ This command tells the build system to start compiling the kernel immediately us
 
 > [!CAUTION]
 >
-> These GKI build scripts only compile the kernel `Image` from source. They **may NOT include**:
-> - OEM out-of-tree drivers (e.g., Samsung's `sec_*`, EFUSE triggers, TrustZone handlers)
-> - Vendor-specific modules built only via official OEM build systems.
+> Bu GKI derleme betikleri sadece kaynaktan çekirdek `Image` dosyasını derler. Şunları **İÇERMEYEBİLİR**:
+> - OEM ağaç dışı sürücüler (örn. Samsung'un `sec_*`, EFUSE tetikleyicileri, TrustZone işleyicileri)
+> - Yalnızca resmi OEM derleme sistemleri aracılığıyla oluşturulan satıcıya özgü modüller.
 >
-> Flashing this `Image` as your **first custom binary** after unlocking the bootloader can **permanently hard brick** your device — especially on **Samsung MediaTek GKI 2.0+** models.
+> Bu `Image` dosyasını önyükleyici kilidini açtıktan sonra **ilk özel ikili dosyanız** olarak flashlamak, cihazınızı **kalıcı olarak hard brick** yapabilir (kullanılamaz hale getirebilir) — özellikle **Samsung MediaTek GKI 2.0+** modellerinde.
 >
-> Why? Because missing security drivers may prevent proper EFUSE handling, and the system may treat your flash as a tamper violation, leading to irreversible brick.
+> Neden? Çünkü eksik güvenlik sürücüleri düzgün EFUSE işlemesini engelleyebilir ve sistem flashlamanızı bir kurcalama ihlali olarak değerlendirip geri döndürülemez bir brick durumuna yol açabilir.
 >
-> I’ve already bricked a phone this way — so **take this seriously.**
+> Ben zaten bu şekilde bir telefonu brick yaptım — bu yüzden **bunu ciddiye alın.**
 >
-> If you still want to proceed and learn how to build a *safe* and *bootable* GKI kernel, especially for Samsung MTK devices, refer to my **SM-A166P repo**:
+> Hala devam etmek ve özellikle Samsung MTK cihazları için *güvenli* ve *önyüklenebilir* bir GKI çekirdeği oluşturmayı öğrenmek istiyorsanız, **SM-A166P depoma** bakın:
 >
 > 👉 https://github.com/ravindu644/android_kernel_a166p
 >
-> **TLDR:** **DO NOT FLASH GKI `Image` ALONE WITHOUT VENDOR DRIVERS — ESPECIALLY ON SAMSUNG MTK DEVICES**
+> **ÖZET:** **SATICI SÜRÜCÜLERİ OLMADAN GKI `Image` DOSYASINI TEK BAŞINA FLASHLAMAYIN — ÖZELLİKLE SAMSUNG MTK CİHAZLARINDA**
 
 <hr>
 
-### 02. Edit the Build script:
+### 02. Derleme betiğini düzenleyin:
 
-**Open the build script in a text editor and make these changes:**
+**Derleme betiğini bir metin düzenleyicide açın ve şu değişiklikleri yapın:**
 
-- Replace `your_defconfig` to your current defconfig which is located in `arch/arm64/configs`
+- `your_defconfig` kısmını `arch/arm64/configs` içinde bulunan mevcut defconfig dosyanızla değiştirin.
 
-- In GKI 2.0 kernels, it's normally `gki_defconfig`
+- GKI 2.0 çekirdeklerinde, bu normalde `gki_defconfig`'dir.
 
-- But just in case, make sure to check `arch/arm64/configs` or `arch/arm64/configs/vendor`
+- Ancak her ihtimale karşı, `arch/arm64/configs` veya `arch/arm64/configs/vendor` dizinlerini kontrol ettiğinizden emin olun.
 
-- If your defconfig is located in the `arch/arm64/configs` directory, just replace `your_defconfig` with the name of your defconfig.
+- Defconfig dosyanız `arch/arm64/configs` dizinindeyse, `your_defconfig` kısmını sadece defconfig dosyanızın adıyla değiştirin.
 
-- If your defconfig is located in the `arch/arm64/configs/vendor` directory, replace `your_defconfig` like this:
+- Defconfig dosyanız `arch/arm64/configs/vendor` dizinindeyse, `your_defconfig` kısmını şu şekilde değiştirin:
   
-  - `vendor/name_of_the_defconfig`
-  - Example patch: [here](./patches/005.edit-defconfig.patch)
+  - `vendor/defconfig_dosyasinin_adi`
+  - Örnek yama: [burada](./patches/005.edit-defconfig.patch)
 
   <img src="./screenshots/12.png">
 
-**❗If your device is Samsung Exynos, it doesn't support compiling the kernel in a separated 'out' directory. So, [edit your build script like this](./patches/001.nuke_out.patch)**  
+**❗Cihazınız Samsung Exynos ise, çekirdeğin ayrılmış bir 'out' dizininde derlenmesini desteklemez. Bu yüzden, [derleme betiğinizi bu şekilde düzenleyin](./patches/001.nuke_out.patch)**  
 
 ---
-#### ⚠️ [IMPORTANT] : *If your device is Samsung, it usually uses some device-specific variables in "some" kernels.*
+#### ⚠️ [ÖNEMLİ] : *Cihazınız Samsung ise, genellikle "bazı" çekirdeklerde cihaza özgü bazı değişkenler kullanır.*
 
-- **As an example,** in the Galaxy S23 FE kernel source code, we can see they used variables called `TARGET_SOC=s5e9925`, `PLATFORM_VERSION=12`, and `ANDROID_MAJOR_VERSION=s`
+- **Örnek olarak,** Galaxy S23 FE çekirdek kaynak kodunda, `TARGET_SOC=s5e9925`, `PLATFORM_VERSION=12` ve `ANDROID_MAJOR_VERSION=s` adlı değişkenleri kullandıklarını görebiliriz.
 
-- **If we didn't export those variables correctly,** the kernel failed to build in my case.
+- **Bu değişkenleri doğru şekilde dışa aktarmazsak (export),** benim durumumda çekirdek derlenemedi.
 
-- Don't worry, they usually mention these required variables in their `README_Kernel.txt` or their own `build_kernel.sh`
+- Endişelenmeyin, bu gerekli değişkenleri genellikle `README_Kernel.txt` dosyalarında veya kendi `build_kernel.sh` dosyalarında belirtirler. 
 
   <img src="./screenshots/16.png">
 
-**Refer to this example patch to properly integrate such variables into our build script:** [here](./patches/007.Define-OEM-Variables.patch)
+**Bu tür değişkenleri derleme betiğimize düzgün bir şekilde entegre etmek için bu örnek yamaya bakın:** [burada](./patches/007.Define-OEM-Variables.patch)
 
-**Note:** Just don't overthink it, even if they use values like 12 and S for Platform and Android versions, even if you have a higher Android version.
-
----
-
-🔴 **If your device has a MediaTek chipset, usually it doesn't support booting a RAW kernel `Image`. Therefore, you should build a gzip-compressed kernel `Image.gz` instead.**  
-
-- [Here's the required patch for it](./patches/014.build_gzip_compressed_kernel.patch)
+**Not:** Çok fazla düşünmeyin, Platform ve Android sürümleri için 12 ve S gibi değerler kullansalar bile, daha yüksek bir Android sürümüne sahip olsanız bile aynısını kullanın.
 
 ---
 
-### 03. Edit the Makefile.
+🔴 **Cihazınız MediaTek yonga setine sahipse, genellikle RAW çekirdek `Image` önyüklemesini desteklemez. Bu nedenle, bunun yerine gzip ile sıkıştırılmış bir çekirdek `Image.gz` oluşturmalısınız.**
 
-- If you find these variables: ```REAL_CC``` or ```CFP_CC``` in your "Makefile", remove them from the "Makefile", then Search for "wrapper" in your Makefile. If there's a line related to a Python file, remove that entire line/function as well.
+- [Bunun için gerekli yama burada](./patches/014.build_gzip_compressed_kernel.patch)
 
-    - Example patch of removing the wrapper: [click here](./patches/004.remove_gcc%20wrapper.patch)
+---
+
+### 03. Makefile dosyasını düzenleyin.
+
+- "Makefile" dosyanızda şu değişkenleri bulursanız: ```REAL_CC``` veya ```CFP_CC```, bunları "Makefile"dan kaldırın, ardından Makefile dosyanızda "wrapper"ı arayın. Bir Python dosyasıyla ilgili bir satır varsa, o satırın/fonksiyonun tamamını da kaldırın.
+
+    - Wrapper'ı kaldırmanın örnek yaması: [buraya tıklayın](./patches/004.remove_gcc%20wrapper.patch)
 
 <hr>
 
-### 04. Now, grant executable permissions to ```build_xxxx.sh``` using this command.
+### 04. Şimdi, bu komutu kullanarak ```build_xxxx.sh``` dosyasına çalıştırma izni verin.
   ```
   chmod +x build_xxxx.sh
   ```
-### 05. Finally, run the build script using this command :
-  ```
-./build_xxxx.sh
-```
+### 05. Son olarak, derleme betiğini şu komutu kullanarak çalıştırın:
+  ```./build_xxxx.sh```
 
 <img src="./screenshots/8.png">
 
-- When you run the script for the first time, it will begin to install all the necessary dependencies and start downloading the required toolchains, depending on your kernel version.
+- Betiği ilk kez çalıştırdığınızda, gerekli tüm bağımlılıkları yüklemeye başlayacak ve çekirdek sürümünüze bağlı olarak gerekli araç zincirlerini (toolchains) indirmeye başlayacaktır.
 
-- Make sure not to interrupt the first run. If it gets interrupted somehow, delete the `toolchains` folder from "~/" and try again: ```rm -rf ~/toolchains```
+- İlk çalıştırmayı yarıda kesmediğinizden emin olun. Herhangi bir şekilde kesilirse, `toolchains` klasörünü "~/". dizininden silin ve tekrar deneyin: ```rm -rf ~/toolchains```
 
 <img src="./screenshots/9.png">
 
-### After the initial run is completed, the kernel should start building, 
+### İlk çalıştırma tamamlandıktan sonra, çekirdek derlenmeye başlamalıdır, 
 
 <img src="./screenshots/11.png">
 
-### and the "menuconfig" should appear.
+### ve "menuconfig" görünmelidir.
 
 <img src="./screenshots/10.png">
 
-- **Additional notes:**
-    - You can completely ignore anything displayed as `warning:`
-      - Eg: `warning: ignoring unsupported character '`
+- **Ek notlar:**
+    - `warning:` olarak görüntülenen her şeyi tamamen görmezden gelebilirsiniz
+      - Örn: `warning: ignoring unsupported character '`
 <hr>
 
-## <span id="customizing-kernel-temporary-method">✅ Customizing the Kernel (Temporary Method)</span>
-- Once the *menuconfig* appears, you can navigate through it and customize the Kernel in a graphical way as needed.
+## <span id="customizing-kernel-temporary-method">✅ Çekirdeği Özelleştirme (Geçici Yöntem)</span>
+- *menuconfig* göründüğünde, içinde gezinebilir ve Çekirdeği gerektiği gibi grafiksel bir şekilde özelleştirebilirsiniz.  
 
-- **As an example,** we can customize **the Kernel name, enable new drivers, enable new file systems, disable security features,** and more :)
+- **Örnek olarak,** **Çekirdek adını özelleştirebilir, yeni sürücüleri etkinleştirebilir, yeni dosya sistemlerini etkinleştirebilir, güvenlik özelliklerini devre dışı bırakabilir** ve daha fazlasını yapabiliriz :)
 
-#### You can navigate the *menuconfig* using the arrow keys (← → ↑ ↓) on your keyboard and press `y` to enable, `n` to disable or `m` to enable as a module `<M>`.
+#### *menuconfig* içinde klavyenizdeki ok tuşlarını (← → ↑ ↓) kullanarak gezinebilir ve etkinleştirmek için `y`, devre dışı bırakmak için `n` veya bir modül `<M>` olarak etkinleştirmek için `m` tuşuna basabilirsiniz.
 
-### 1. Changing the Kernel name.
+### 1. Çekirdek adını değiştirme.
 
-- I guess no explanation is needed for this:
+- Sanırım bunun için açıklamaya gerek yok:
 
     <img src="./screenshots/14.png" width="60%">
 
-- Located in: `General setup  ---> Local version - append to kernel release`
+- Konum: `General setup  ---> Local version - append to kernel release`
 
 <img src="./screenshots/gif/1.gif">
 
-### 2. Enabling BTRFS support.
+### 2. BTRFS desteğini etkinleştirme.
 
-- Btrfs is a modern Linux filesystem with copy-on-write, snapshots, and built-in RAID, ideal for reliability and scalability.
+- Btrfs, güvenilirlik ve ölçeklenebilirlik için ideal olan, yazma sırasında kopyalama (copy-on-write), anlık görüntüler (snapshots) ve yerleşik RAID özelliklerine sahip modern bir Linux dosya sistemidir.
 
-- Located in: `File systems  ---> < > Btrfs filesystem support`
+- Konum: `File systems  ---> < > Btrfs filesystem support`
 
 <img src="./screenshots/gif/2.gif">
 
-### 3. Enabling more CPU Governors
+### 3. Daha fazla CPU Yöneticisi (Governor) Etkinleştirme
 
-- **CPU governors control how the processor adjusts it's speed.**
--  You can choose between performance-focused governors (like "performance" for max speed) or battery-saving ones (like "powersave").
--  Please note that this may impact your SoC’s lifespan if the device overheats while handling performance-intensive tasks.
+- **CPU yöneticileri, işlemcinin hızını nasıl ayarlayacağını kontrol eder.**
+-  Performans odaklı yöneticiler (maksimum hız için "performance" gibi) veya pil tasarrufu sağlayanlar ("powersave" gibi) arasında seçim yapabilirsiniz.
+-  Cihaz performans gerektiren görevleri yerine getirirken aşırı ısınırsa bunun SoC'nizin ömrünü etkileyebileceğini lütfen unutmayın.
 
-**Enabling more CPU Governors:**
+**Daha fazla CPU Yöneticisi Etkinleştirme:**
 
-- Located in: `CPU Power Management  ---> CPU Frequency scaling  ---> `
+- Konum: `CPU Power Management  ---> CPU Frequency scaling  ---> `
 
 <img src="./screenshots/gif/3.gif">
 
-**Changing the Default CPU Governor:**
+**Varsayılan CPU Yöneticisini Değiştirme:**
 
-- Located in: `CPU Power Management  ---> CPU Frequency scaling  ---> Default CPUFreq governor (performance)  --->`
+- Konum: `CPU Power Management  ---> CPU Frequency scaling  ---> Default CPUFreq governor (performance)  --->`
 
 <img src="./screenshots/gif/4.gif">
 
-### 4. Enabling more IO Schedulers
+### 4. Daha fazla G/Ç (IO) Zamanlayıcısı Etkinleştirme
 
-- **IO schedulers control how your system handles reading and writing data to storage.**
-- Different schedulers can make your system faster or help it run smoother, depending on what you're doing (like gaming, browsing, or saving battery).
-- Located in: `IO Schedulers  --->`
+- **G/Ç zamanlayıcıları, sisteminizin depolamaya veri okuma ve yazma işlemlerini nasıl yöneteceğini kontrol eder.**
+- Farklı zamanlayıcılar, ne yaptığını ne yaptığınıza bağlı olarak (oyun oynama, gezinme veya pil tasarrufu gibi) sisteminizi hızlandırabilir veya daha sorunsuz çalışmasına yardımcı olabilir.
+- Konum: `IO Schedulers  --->`
 
 <img src="./screenshots/15.png">
 
-### The problem with menuconfig is that you have to do this every time you run the build script.
+### menuconfig ile ilgili sorun, derleme betiğini her çalıştırdığınızda bunu yapmak zorunda olmanızdır.
 
-- All the changes you've made using menuconfig are saved in a temporary hidden file called `.config` inside the `out` directory.
+- menuconfig kullanarak yaptığınız tüm değişiklikler `out` dizinindeki `.config` adlı geçici gizli bir dosyada kaydedilir.
 
   <img src="./screenshots/18.png">
 
-- and it resets every time you run the build script.
+- ve derleme betiğini her çalıştırdığınızda sıfırlanır.
 
   <img src="./screenshots/17.png">
 
-- So, we need a permanent method to save our changes, right?  
+- Yani, değişikliklerimizi kaydetmek için kalıcı bir yönteme ihtiyacımız var, değil mi?  
 
-## <span id="customizing-kernel-permanent-method">✅ Customizing the Kernel (Permanent Method)</span>
+## <span id="customizing-kernel-permanent-method">✅ Çekirdeği Özelleştirme (Kalıcı Yöntem)</span>
 
-- In this method, **we are going to create a separate `custom.config` to store our changes** and **link it to our build script.** 
+- Bu yöntemde, **değişikliklerimizi saklamak için ayrı bir `custom.config` oluşturacağız** ve **bunu derleme betiğimize bağlayacağız.** 
 
-- After that, when we run the build script, **it will first use your OEM defconfig to generate the `.config` file, then merge the changes from our `custom.config` into `.config` again.** 
+- Bundan sonra, derleme betiğini çalıştırdığımızda, **önce `.config` dosyasını oluşturmak için OEM defconfig'inizi kullanacak, ardından `custom.config` dosyamızdaki değişiklikleri tekrar `.config` ile birleştirecektir.** 
 
-**Refer to these examples to get a basic idea:** [patch](./patches/008.add-custom-defconfig-support.patch), [commit](https://github.com/ravindu644/android_kernel_m145f_common/commit/c427dbebed22c5bb314b4c94c711deffe671b14c)
+**Temel bir fikir edinmek için bu örneklere bakın:** [yama](./patches/008.add-custom-defconfig-support.patch), [commit](https://github.com/ravindu644/android_kernel_m145f_common/commit/c427dbebed22c5bb314b4c94c711deffe671b14c)
 
 ---
 
-### 🤓 How to add changes to our `custom.config` ?
+### 🤓 `custom.config` dosyamıza nasıl değişiklik eklenir?
 
-- First, We have to find the exact **kernel configuration option** you want to **enable** or **disable**.
+- İlk olarak, **etkinleştirmek** veya **devre dışı bırakmak** istediğiniz tam **çekirdek yapılandırma seçeneğini** bulmalıyız.
 
-- Example **kernel configuration option**: `CONFIG_XXXX=y`
+- Örnek **çekirdek yapılandırma seçeneği**: `CONFIG_XXXX=y`
 
-  - `CONFIG_XXXX`: The name of the kernel option or feature **( Must begin with `CONFIG_` )**
-  - `=y`: This means "yes" -> the option is enabled and will be included in the kernel.
-  - `=n`: This means "no" -> the option is disabled.
+  - `CONFIG_XXXX`: Çekirdek seçeneğinin veya özelliğinin adı **( `CONFIG_` ile başlamalıdır )**
+  - `=y`: Bu "evet" anlamına gelir -> seçenek etkindir ve çekirdeğe dahil edilecektir.
+  - `=n`: Bu "hayır" anlamına gelir -> seçenek devre dışıdır.
 
-- You can find the name of the **kernel configuration option** this way:
+- **Çekirdek yapılandırma seçeneğinin** adını şu şekilde bulabilirsiniz:
 
-  - Run the build script and wait until `menuconfig` appears.
-  - Navigate to the option/feature you want to enable.
-  - Press `shift + ?` on your keyboard, and an explanation about the option/feature will appear.
-  - You’ll see the name of the **kernel configuration option** in the top-left corner of the menuconfig.
+  - Derleme betiğini çalıştırın ve `menuconfig` görünene kadar bekleyin.
+  - Etkinleştirmek istediğiniz seçeneğe/özelliğe gidin.
+  - Klavyenizde `shift + ?` tuşlarına basın, seçenek/özellik hakkında bir açıklama görünecektir.
+  - menuconfig'in sol üst köşesinde **çekirdek yapılandırma seçeneğinin** adını göreceksiniz.
 
     <img src="./screenshots/19.png">
 
-  - **Copy that name** and add it to your `custom.config` with `=y` or `=n` to enable or disable it.
+  - **O adı kopyalayın** ve etkinleştirmek veya devre dışı bırakmak için `custom.config` dosyanıza `=y` veya `=n` ile ekleyin.
 
     <img src="./screenshots/20.png">
 
-## <span id="nuke-samsung-anti-root-protections">⁉️ How to nuke Samsung's anti-root protections?</span>
+## <span id="nuke-samsung-anti-root-protections">⁉️ Samsung'un anti-root korumaları nasıl kaldırılır?</span>
 
- - ### [Moved to here](./samsung-rkp/)
+ - ### [Buraya taşındı](./samsung-rkp/)
 
-## <span id="additional-patches">🟢 Additional Patches</span>
+## <span id="additional-patches">🟢 Ek Yamalar</span>
 
-### 01. To fix broken system funcitons like Wi-Fi, touch, sound etc.
+### 01. Wi-Fi, dokunmatik, ses vb. gibi bozuk sistem işlevlerini düzeltmek için.
 > [!NOTE]
-> Bypassing this usually not a good practice, because something like this is used as **last effort,**
+> Bunu atlatmak genellikle iyi bir uygulama değildir, çünkü bunun gibi bir şey **son çare** olarak kullanılır,
 >
-> when there's no open source linux driver found. (e.g Proprietary drivers)
+> açık kaynaklı linux sürücüsü bulunamadığında. (örn. Tescilli sürücüler)
 >
-> But, for newbies or kernel developer that wanna ship their Loadable Kernel Module, **this is okay.**
+> Ancak, yeni başlayanlar veya Yüklenebilir Çekirdek Modüllerini göndermek isteyen çekirdek geliştiricileri için **bu sorun değildir.**
 
 ---
 
-  - On some devices, **compiling a custom kernel can break system-level functionalities like Wi-Fi, touch, sound, and even cause the system to not boot.**
+  - Bazı cihazlarda, **özel bir çekirdek derlemek Wi-Fi, dokunmatik, ses gibi sistem düzeyindeki işlevleri bozabilir ve hatta sistemin açılmamasına neden olabilir.**
 
-  - The reason behind this is that the device can't load the external kernel modules `(*.ko)`, due to linux's prebuilt security feature `(symversioning, signature)` that prevent malicious kernel module to load.
+  - Bunun arkasındaki neden, cihazın linux'un kötü amaçlı çekirdek modüllerinin yüklenmesini önleyen önceden oluşturulmuş güvenlik özelliği `(symversioning, signature)` nedeniyle harici çekirdek modüllerini `(*.ko)` yükleyememesidir.
 
-  - To fix this issue, [use this patch](./patches/010.Disable-CRC-Checks.patch) to force the kernel to load those modules.
+  - Bu sorunu düzeltmek için, çekirdeği bu modülleri yüklemeye zorlamak üzere [bu yamayı kullanın](./patches/010.Disable-CRC-Checks.patch).
 
-  **Even if you don't have such an issue, using this patch is still a good practice.**
+  **Böyle bir sorununuz olmasa bile, bu yamayı kullanmak yine de iyi bir uygulamadır.**
 
   ---
 
-### 02. Fix: `There's an internal problem with your device.` issue.
+### 02. Düzeltme: `There's an internal problem with your device.` (Cihazınızda dahili bir sorun var) hatası.
 
-**The reason:**
+**Nedeni:**
 
   ```
 Userspace reads /proc/config.gz and spits out an error message after boot
@@ -681,95 +679,97 @@ userspace the stock defconfig so that it never complains about our
 kernel configuration.
   ```
 
-- To fix this issue, make a copy of your OEM's Defconfig and rename it to `stock_defconfig`.
+  *(Kullanıcı alanı /proc/config.gz dosyasını okur ve çekirdeğin yapılandırmasını beğenmediğinde önyükleme bittikten sonra bir hata mesajı verir. Çekirdeği istediğimiz gibi özelleştirme özgürlüğümüzü korumak için, kullanıcı alanına stok defconfig'i gösterin, böylece çekirdek yapılandırmamız hakkında asla şikayet etmez.)*
+
+- Bu sorunu düzeltmek için, OEM'inizin Defconfig dosyasının bir kopyasını alın ve adını `stock_defconfig` olarak değiştirin.
 
   <img src="./screenshots/30.png">
 
-- Then, use the patch below to fool Android into thinking that the defconfig was not changed:
+- Ardından, Android'i defconfig'in değişmediğini düşünmesi için kandırmak üzere aşağıdaki yamayı kullanın:
 
-  - [Patch](./patches/011.stock_defconfig.patch), [Commit](https://github.com/ravindu644/android_kernel_a047f_eur/commit/d306bd4c4c84a12be5235e31540f40fb9c1a1066)
+  - [Yama](./patches/011.stock_defconfig.patch), [Commit](https://github.com/ravindu644/android_kernel_a047f_eur/commit/d306bd4c4c84a12be5235e31540f40fb9c1a1066)
     
-## <span id="compiling-the-kernel">✅ Compiling the Kernel</span>
+## <span id="compiling-the-kernel">✅ Çekirdeği Derlemek</span>
 
-- Once you've customized the kernel as you want, simply **exit menuconfig**.  
-- After exiting, the kernel will start compiling!
+- Çekirdeği istediğiniz gibi özelleştirdikten sonra, sadece **menuconfig'den çıkın**.  
+- Çıktıktan sonra, çekirdek derlenmeye başlayacaktır!
 
 <img src="./screenshots/gif/5.gif">
 
-### 💡 If everything goes smoothly like this,
+### 💡 Her şey böyle sorunsuz giderse, 
 
   <img src="./screenshots/21.png">
 
-### you’ll find the built kernel `Image` inside the `build` folder in your kernel root!
+### derlenmiş çekirdek `Image` dosyasını çekirdek kökünüzdeki `build` klasörünün içinde bulacaksınız!
 
   <img src="./screenshots/22.png">
 
-## <span id="fixing-known-compiling-issues">🟥 Fixing the Known compiling issues</span>
+## <span id="fixing-known-compiling-issues">🟥 Bilinen derleme sorunlarını düzeltme</span>
 
-- **If you ever encounter any errors during your kernel compilation,** jump to [fixes](./patches/) and see if your specific issue is mentioned there.
+- **Çekirdek derlemeniz sırasında herhangi bir hatayla karşılaşırsanız,** [düzeltmelere](./patches/) gidin ve sorununuzun orada belirtilip belirtilmediğine bakın.
 
-**[Click here to learn about known issues and their fixes](./patches/README.md)**
+**[Bilinen sorunlar ve düzeltmeleri hakkında bilgi edinmek için buraya tıklayın](./patches/README.md)**
 
-## <span id="building-signed-boot-image">🟡 Building a Signed Boot Image from the Compiled Kernel</span>
+## <span id="building-signed-boot-image">🟡 Derlenmiş Çekirdekten İmzalı Bir Önyükleme İmajı (Boot Image) Oluşturma</span>
 
-- On Android devices, **the `kernel` image is usually located inside the `boot` partition.**
+- Android cihazlarda, **`kernel` imajı genellikle `boot` bölümünün içinde bulunur.**
 
   <img src="./screenshots/23.png">
 
-- So, all we have to do is **get the boot image from the stock ROM, unpack it, replace its kernel with our "built" one, repack it, flash it,** and **enjoy :)**
+- Yani, tek yapmamız gereken **stok ROM'dan boot imajını almak, paketini açmak, çekirdeğini bizim "oluşturduğumuz" ile değiştirmek, yeniden paketlemek, flashlamak** ve **keyfini çıkarmak :)**
 
-**For the unpacking and repacking process, we are going to use `magiskboot`, Magisk's built-in boot image unpacker and repacker!**
+**Paket açma ve yeniden paketleme işlemi için, Magisk'in yerleşik önyükleme imajı paket açıcısı ve yeniden paketleyicisi olan `magiskboot`'u kullanacağız!**
 
-### 01. Downloading and extracting the latest Magisk APK
+### 01. En son Magisk APK'sını indirme ve çıkarma
 
-- Download the latest Magisk APK from [their GitHub releases](https://github.com/topjohnwu/Magisk/releases/latest) and extract it like this:
+- En son Magisk APK'sını [GitHub sürümlerinden](https://github.com/topjohnwu/Magisk/releases/latest) indirin ve şu şekilde çıkarın:
 
   <img src="./screenshots/24.png">
 
-### 02. Getting `magiskboot` from the extracted folder & Adding it to the system PATH
+### 02. Çıkarılan klasörden `magiskboot`'u alma & Sistem PATH'ine ekleme
 
-- The `magiskboot` binary will be located inside the `extracted_magisk_apk/lib/<arch>` folder with the filename `libmagiskboot.so` :
+- `magiskboot` ikili dosyası, `extracted_magisk_apk/lib/<arch>` klasörünün içinde `libmagiskboot.so` dosya adıyla bulunacaktır:
 
   <img src="./screenshots/26.png">
 
-**Rename it to `magiskboot` and install it to your system PATH with this:**
+**Adını `magiskboot` olarak değiştirin ve şununla sistem PATH'inize yükleyin:**
 
   <img src="./screenshots/27.png">
 
-Quick commands:
+Hızlı komutlar:
 
 ```bash
-# Renaming libmagiskboot.so to magiskboot
-mv libmagiskboot.so magiskboot
+# libmagiskboot.so dosyasının adını magiskboot olarak değiştirme
+mv libmagiskboot.so magiskboot 
 
-# Giving magiskboot executable permissions
+# magiskboot'a çalıştırılabilir izinler verme
 chmod +x magiskboot 
 
-# Installing magiskboot to the system PATH
+# magiskboot'u sistem PATH'ine yükleme
 sudo cp magiskboot /usr/local/bin/
 ```
 
-### 03. Unpacking the `boot.img`
+### 03. `boot.img` paketini açma
 
-1. Extract the `boot` image from your stock ROM and place it inside a new folder
+1. Stok ROM'unuzdan `boot` imajını çıkarın ve yeni bir klasörün içine yerleştirin
 
   <img src="./screenshots/28.png">
 
-**✔️ Samsung-only note:**
+**✔️ Sadece Samsung notu:**
 
-  - **On Samsung devices,** these images are usually located inside the `AP_XXXX.tar.md5` file.
+  - **Samsung cihazlarda,** bu imajlar genellikle `AP_XXXX.tar.md5` dosyasının içinde bulunur.
 
-  - All you have to do is rename `AP_XXXX.tar.md5` to `AP_XXXX.tar` to remove the `md5` extension, extract `AP_XXXX.tar`, and grab the `boot.img.lz4` file from the extracted folder.
+  - Tek yapmanız gereken `md5` uzantısını kaldırmak için `AP_XXXX.tar.md5` dosyasının adını `AP_XXXX.tar` olarak değiştirmek, `AP_XXXX.tar` dosyasını çıkarmak ve çıkarılan klasörden `boot.img.lz4` dosyasını almaktır.
 
-  - Then, **decompress this lz4 file using the following command,** and you will get your RAW `boot.img`
+  - Ardından, **aşağıdaki komutu kullanarak bu lz4 dosyasını açın** ve RAW `boot.img` dosyanızı elde edeceksiniz
 
     ```bash
-    lz4 boot.img.lz4
-    ```  
+lz4 boot.img.lz4
+```  
     
     <img src="./screenshots/25.png">
 
-2. Now, run the following command to unpack the `boot.img`:
+2. Şimdi, `boot.img` paketini açmak için aşağıdaki komutu çalıştırın:
 
   ```bash
   magiskboot unpack boot.img
@@ -777,26 +777,26 @@ sudo cp magiskboot /usr/local/bin/
 
   <img src="./screenshots/45.png">
 
-#### 🟠 As you can see in the screenshot above, the original `kernel` of the unpacked `boot.img` is located in the same folder where the boot.img is located.
+#### 🟠 Yukarıdaki ekran görüntüsünde görebileceğiniz gibi, paketi açılmış `boot.img`'nin orijinal `kernel`'i, boot.img'nin bulunduğu klasörle aynı klasörde bulunur.
 
-**Note:** Don't delete the original boot.img as it is needed for the repacking process.
+**Not:** Yeniden paketleme işlemi için gerekli olduğundan orijinal boot.img dosyasını silmeyin.
 
-### 03. Repacking the `boot.img`
+### 03. `boot.img`'yi yeniden paketleme
 
-- Now, all we have to do is **replace the original `kernel` with our compiled custom kernel.**
+- Şimdi, tek yapmamız gereken **orijinal `kernel`'i derlenmiş özel çekirdeğimizle değiştirmek.**
 
-**Example:**
+**Örnek:**
 
 <img src="./screenshots/gif/6.gif">
 <br>
 
-**What did I do?**
+**Ne yaptım?**
 
-1. Copied the compiled `Image` from the `out/arch/arm64/boot` or `build` folder to the folder where we unpacked our `boot.img` using `magiskboot`
+1. `out/arch/arm64/boot` veya `build` klasöründen derlenmiş `Image` dosyasını, `magiskboot` kullanarak `boot.img` dosyamızı açtığımız klasöre kopyaladım
 
-2. Deleted the original `kernel` and renamed `Image` to `kernel` 😎
+2. Orijinal `kernel`'i sildim ve `Image` dosyasının adını `kernel` olarak değiştirdim 😎
 
-3. Then repacked the `boot.img` using the below command:
+3. Ardından aşağıdaki komutu kullanarak `boot.img`'yi yeniden paketledim:
 
 
 ```bash
@@ -805,26 +805,28 @@ magiskboot repack boot.img
 
   <img src="./screenshots/28.png">
 
-### 🟨 Our new boot image will be located inside the same folder where we unpacked the stock `boot.img` with the name `new-boot.img`
+### 🟨 Yeni boot imajımız, `new-boot.img` adıyla stok `boot.img` paketini açtığımız klasörün içinde yer alacaktır.
 
-- Copy the `new-boot.img` file to another location and rename it to `boot.img`
+- `new-boot.img` dosyasını başka bir konuma kopyalayın ve adını `boot.img` olarak değiştirin
 
-- Now, all you have to do is **flash that `boot.img` through fastboot mode** or **Download mode** (Samsung)
+- Şimdi, tek yapmanız gereken **o `boot.img` dosyasını fastboot moduyla** veya **Download moduyla** (Samsung) flashlamaktır.
 
-**✔️ Samsung-only note:**  
+**✔️ Sadece Samsung notu:**  
 
-- You can create an ODIN-flashable `tar` file using the command below:  
+- Aşağıdaki komutu kullanarak ODIN ile flashlanabilir bir `tar` dosyası oluşturabilirsiniz:  
 
   ```bash
   tar -cvf "Custom-Kernel.tar" boot.img
   ```
 
-- Then, flash that `tar` file using ODIN's AP slot :)
+- Ardından, o `tar` dosyasını ODIN'in AP yuvasını kullanarak flashlayın :)
 
 ---
 
-**Written by:** [@ravindu644](https://t.me/ravindu) and our contributor(s)
+Yazan: [@ravindu644](https://t.me/ravindu) ve katkıda bulunanlar
 
-**Join Telegram:** [@SamsungTweaks](https://t.me/SamsungTweaks)
+**Telegram'a Katılın:** [@SamsungTweaks](https://t.me/SamsungTweaks)
 
 ---
+
+```
